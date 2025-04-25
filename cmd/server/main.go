@@ -19,9 +19,9 @@ func main() {
 		cfg.DATABASE.DbName)
 
 	log.Printf("External APIs:")
-	log.Printf("- Agify URL: %s", cfg.EXTERNAL_API.AgifyURL)
-	log.Printf("- Genderize URL: %s", cfg.EXTERNAL_API.GenderizeURL)
-	log.Printf("- Nationalize URL: %s", cfg.EXTERNAL_API.NationalizeURL)
+	log.Printf("- Agify URL: %s", cfg.ExternalApi.AgifyURL)
+	log.Printf("- Genderize URL: %s", cfg.ExternalApi.GenderizeURL)
+	log.Printf("- Nationalize URL: %s", cfg.ExternalApi.NationalizeURL)
 
 	fmt.Println("Configuration loaded successfully!")
 }
