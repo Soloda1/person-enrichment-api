@@ -9,11 +9,12 @@ import (
 )
 
 type DATABASE struct {
-	Username string `env:"DATABASE_USERNAME" env-default:"postgres"`
-	Password string `env:"DATABASE_PASSWORD" env-default:"postgres"`
-	Host     string `env:"DATABASE_HOST" env-default:"localhost"`
-	Port     string `env:"DATABASE_PORT" env-default:"5432"`
-	DbName   string `env:"DATABASE_DB_NAME" env-default:"person_enrichment"`
+	Username       string `env:"DATABASE_USERNAME" env-default:"postgres"`
+	Password       string `env:"DATABASE_PASSWORD" env-default:"postgres"`
+	Host           string `env:"DATABASE_HOST" env-default:"localhost"`
+	Port           string `env:"DATABASE_PORT" env-default:"5432"`
+	DbName         string `env:"DATABASE_DB_NAME" env-default:"person_enrichment"`
+	MigrationsPath string `env:"MIGRATIONS_PATH" env-default:"./migrations"`
 }
 
 type ExternalApi struct {
@@ -48,11 +49,12 @@ func MustLoad() *Config {
 			IdleTimeout: parseDuration(os.Getenv("HTTP_SERVER_IDLE_TIMEOUT"), "60s"),
 		},
 		DATABASE: DATABASE{
-			Username: os.Getenv("DATABASE_USERNAME"),
-			Password: os.Getenv("DATABASE_PASSWORD"),
-			Host:     os.Getenv("DATABASE_HOST"),
-			Port:     os.Getenv("DATABASE_PORT"),
-			DbName:   os.Getenv("DATABASE_DB_NAME"),
+			Username:       os.Getenv("DATABASE_USERNAME"),
+			Password:       os.Getenv("DATABASE_PASSWORD"),
+			Host:           os.Getenv("DATABASE_HOST"),
+			Port:           os.Getenv("DATABASE_PORT"),
+			DbName:         os.Getenv("DATABASE_DB_NAME"),
+			MigrationsPath: os.Getenv("MIGRATIONS_PATH"),
 		},
 		ExternalApi: ExternalApi{
 			AgifyURL:       os.Getenv("AGIFY_API_URL"),

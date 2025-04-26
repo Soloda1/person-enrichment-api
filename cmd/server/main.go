@@ -2,24 +2,30 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"person-enrichment-api/config"
 	"person-enrichment-api/internal/api"
+	"person-enrichment-api/internal/migrator"
 	"syscall"
 	"time"
 )
 
 func main() {
 	cfg := config.MustLoad()
-	dsn := ""
-	server := api.NewAPIServer(cfg.HTTPServer.Address, dsn)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", cfg.DATABASE.Username, cfg.DATABASE.Password, cfg.DATABASE.Host, cfg.DATABASE.Port, cfg.DATABASE.DbName)
 	ctx := context.Background()
+	log := setupLogger(cfg.Env)
+
+	server := api.NewAPIServer(cfg.HTTPServer.Address, log)
+
+	migrator.Migrate(log, dsn, cfg.DATABASE.MigrationsPath)
 
 	done := make(chan bool)
 	go func() {
-		if err := server.Run(cfg, ctx); err != nil {
+		if err := server.Run(ctx, cfg); err != nil {
 			slog.Error("server error", slog.String("err", err.Error()))
 		}
 		done <- true
@@ -37,4 +43,20 @@ func main() {
 	}
 	<-done
 	slog.Info("Server exiting")
+}
+
+const (
+	envDev  = "dev"
+	envProd = "prod"
+)
+
+func setupLogger(env string) *slog.Logger {
+	var log *slog.Logger
+	switch env {
+	case envDev:
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true}))
+	case envProd:
+		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo, AddSource: true}))
+	}
+	return log
 }

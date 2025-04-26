@@ -1,9 +1,10 @@
 package requestLogger
 
 import (
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func RequestLoggerMiddleware(log *slog.Logger) gin.HandlerFunc {
