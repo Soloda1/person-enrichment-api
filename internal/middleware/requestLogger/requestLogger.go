@@ -2,12 +2,13 @@ package requestLogger
 
 import (
 	"log/slog"
+	"person-enrichment-api/internal/utils/logger"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-func RequestLoggerMiddleware(log *slog.Logger) gin.HandlerFunc {
+func RequestLoggerMiddleware(log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("Logger Middleware enabled")
 

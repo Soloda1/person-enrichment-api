@@ -9,54 +9,48 @@ import (
 	"person-enrichment-api/config"
 	"person-enrichment-api/internal/api"
 	"person-enrichment-api/internal/migrator"
+	"person-enrichment-api/internal/utils/logger"
 	"syscall"
 	"time"
 )
 
 func main() {
 	cfg := config.MustLoad()
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", cfg.DATABASE.Username, cfg.DATABASE.Password, cfg.DATABASE.Host, cfg.DATABASE.Port, cfg.DATABASE.DbName)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+		cfg.DATABASE.Username,
+		cfg.DATABASE.Password,
+		cfg.DATABASE.Host,
+		cfg.DATABASE.Port,
+		cfg.DATABASE.DbName)
 	ctx := context.Background()
-	log := setupLogger(cfg.Env)
+	log := logger.New(cfg.Env)
+
+	// Запуск миграций
+	if err := migrator.Migrate(log, dsn, cfg.DATABASE.MigrationsPath); err != nil {
+		log.Error("Failed to run migrations", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	server := api.NewAPIServer(cfg.HTTPServer.Address, log)
-
-	migrator.Migrate(log, dsn, cfg.DATABASE.MigrationsPath)
 
 	done := make(chan bool)
 	go func() {
 		if err := server.Run(ctx, cfg); err != nil {
-			slog.Error("server error", slog.String("err", err.Error()))
+			log.Error("server error", slog.String("error", err.Error()))
 		}
 		done <- true
 	}()
 
-	//Graceful shutdown
+	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
 	<-quit
-	slog.Info("Shutting down server...")
+	log.Info("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
-		slog.Error("server shutdown error", slog.String("err", err.Error()))
+		log.Error("server shutdown error", slog.String("error", err.Error()))
 	}
 	<-done
-	slog.Info("Server exiting")
-}
-
-const (
-	envDev  = "dev"
-	envProd = "prod"
-)
-
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-	switch env {
-	case envDev:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug, AddSource: true}))
-	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo, AddSource: true}))
-	}
-	return log
+	log.Info("Server exiting")
 }
