@@ -16,17 +16,17 @@ type DATABASE struct {
 	DbName   string `env:"DATABASE_DB_NAME" env-default:"person_enrichment"`
 }
 
-type EXTERNAL_API struct {
+type ExternalApi struct {
 	AgifyURL       string `env:"AGIFY_API_URL" env-default:"https://api.agify.io"`
 	GenderizeURL   string `env:"GENDERIZE_API_URL" env-default:"https://api.genderize.io"`
 	NationalizeURL string `env:"NATIONALIZE_API_URL" env-default:"https://api.nationalize.io"`
 }
 
 type Config struct {
-	Env          string `env:"ENV" env-default:"local"`
-	HTTPServer   `env-required:"true"`
-	DATABASE     `env-required:"true"`
-	EXTERNAL_API `env-required:"true"`
+	Env         string `env:"ENV" env-default:"local"`
+	HTTPServer  `env-required:"true"`
+	DATABASE    `env-required:"true"`
+	ExternalApi `env-required:"true"`
 }
 
 type HTTPServer struct {
@@ -54,7 +54,7 @@ func MustLoad() *Config {
 			Port:     os.Getenv("DATABASE_PORT"),
 			DbName:   os.Getenv("DATABASE_DB_NAME"),
 		},
-		EXTERNAL_API: EXTERNAL_API{
+		ExternalApi: ExternalApi{
 			AgifyURL:       os.Getenv("AGIFY_API_URL"),
 			GenderizeURL:   os.Getenv("GENDERIZE_API_URL"),
 			NationalizeURL: os.Getenv("NATIONALIZE_API_URL"),
