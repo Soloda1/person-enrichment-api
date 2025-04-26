@@ -17,7 +17,7 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/main .
-COPY --from=builder /app/example.env .env
+COPY --from=builder /app/.env .env
 
 RUN apk add --no-cache ca-certificates
 

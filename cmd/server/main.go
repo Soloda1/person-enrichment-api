@@ -1,27 +1,40 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"context"
+	"log/slog"
+	"os"
+	"os/signal"
 	"person-enrichment-api/config"
+	"person-enrichment-api/internal/api"
+	"syscall"
+	"time"
 )
 
 func main() {
 	cfg := config.MustLoad()
+	dsn := ""
+	server := api.NewAPIServer(cfg.HTTPServer.Address, dsn)
+	ctx := context.Background()
 
-	log.Printf("Environment: %s", cfg.Env)
-	log.Printf("Server Address: %s", cfg.HTTPServer.Address)
-	log.Printf("Database Connection: postgresql://%s:%s@%s:%s/%s",
-		cfg.DATABASE.Username,
-		cfg.DATABASE.Password,
-		cfg.DATABASE.Host,
-		cfg.DATABASE.Port,
-		cfg.DATABASE.DbName)
+	done := make(chan bool)
+	go func() {
+		if err := server.Run(cfg, ctx); err != nil {
+			slog.Error("server error", slog.String("err", err.Error()))
+		}
+		done <- true
+	}()
 
-	log.Printf("External APIs:")
-	log.Printf("- Agify URL: %s", cfg.EXTERNAL_API.AgifyURL)
-	log.Printf("- Genderize URL: %s", cfg.EXTERNAL_API.GenderizeURL)
-	log.Printf("- Nationalize URL: %s", cfg.EXTERNAL_API.NationalizeURL)
-
-	fmt.Println("Configuration loaded successfully!")
+	//Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+	slog.Info("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("server shutdown error", slog.String("err", err.Error()))
+	}
+	<-done
+	slog.Info("Server exiting")
 }
