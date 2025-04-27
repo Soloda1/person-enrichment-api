@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"person-enrichment-api/config"
 	"person-enrichment-api/internal/handlers/person/createPerson"
+	"person-enrichment-api/internal/handlers/person/deletePerson"
+	"person-enrichment-api/internal/handlers/person/getPerson"
+	"person-enrichment-api/internal/handlers/person/getPersons"
+	"person-enrichment-api/internal/handlers/person/updatePerson"
 	"person-enrichment-api/internal/handlers/ping"
 	"person-enrichment-api/internal/middleware/requestLogger"
 	"person-enrichment-api/internal/service/person"
@@ -37,6 +41,10 @@ func (s *APIServer) Run(ctx context.Context, cfg *config.Config) error {
 	router.GET("/ping", ping.Ping)
 
 	router.POST("/create", createPerson.New(s.log, s.personService))
+	router.DELETE("/delete/:id", deletePerson.New(s.log, s.personService))
+	router.GET("/person/:id", getPerson.New(s.log, s.personService))
+	router.GET("/persons", getPersons.New(s.log, s.personService))
+	router.PUT("/update", updatePerson.New(s.log, s.personService))
 
 	s.server = &http.Server{
 		Addr:         s.address,

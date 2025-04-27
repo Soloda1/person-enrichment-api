@@ -12,23 +12,23 @@ import (
 )
 
 type Person struct {
-	ID            int              `json:"id,omitempty"`
-	Name          string           `json:"name,omitempty"`
-	Surname       string           `json:"surname,omitempty"`
-	Patronymic    *string          `json:"patronymic,omitempty"`
-	Age           int              `json:"age,omitempty"`
-	Gender        string           `json:"gender,omitempty"`
-	Nationalities []string         `json:"nationalities,omitempty"`
-	CreatedAt     pgtype.Timestamp `json:"created_at"`
-	UpdatedAt     pgtype.Timestamp `json:"updated_at"`
+	ID         int              `json:"id,omitempty"`
+	Name       string           `json:"name,omitempty"`
+	Surname    string           `json:"surname,omitempty"`
+	Patronymic *string          `json:"patronymic,omitempty"`
+	Age        int              `json:"age,omitempty"`
+	Gender     string           `json:"gender,omitempty"`
+	National   []string         `json:"national,omitempty"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
 }
 
 type PersonRepository interface {
 	Create(ctx context.Context, person *Person) (*Person, error)
-	GetByID(ctx context.Context, id int) (*Person, error)
+	GetByID(ctx context.Context, personId int) (*Person, error)
 	GetALl(ctx context.Context) ([]*Person, error)
-	Update(ctx context.Context, person *Person) error
-	Delete(ctx context.Context, id int) error
+	Update(ctx context.Context, person *Person) (*Person, error)
+	Delete(ctx context.Context, personId int) error
 }
 
 type Repository struct {
@@ -47,14 +47,14 @@ func (r *Repository) Create(ctx context.Context, person *Person) (*Person, error
 	}
 
 	args := pgx.NamedArgs{
-		"name":          person.Name,
-		"surname":       person.Surname,
-		"patronymic":    person.Patronymic,
-		"age":           person.Age,
-		"gender":        person.Gender,
-		"nationalities": person.Nationalities,
-		"created_at":    createdAt,
-		"updated_at":    createdAt}
+		"name":       person.Name,
+		"surname":    person.Surname,
+		"patronymic": person.Patronymic,
+		"age":        person.Age,
+		"gender":     person.Gender,
+		"national":   person.National,
+		"created_at": createdAt,
+		"updated_at": createdAt}
 
 	query := `INSERT INTO Person (name, surname, patronymic, age, gender, national, created_at, updated_at)
 	VALUES (@name, @surname, @patronymic, @age, @gender, @national, @created_at, @updated_at)
@@ -68,7 +68,7 @@ func (r *Repository) Create(ctx context.Context, person *Person) (*Person, error
 		&createdPerson.Patronymic,
 		&createdPerson.Age,
 		&createdPerson.Gender,
-		&createdPerson.Nationalities,
+		&createdPerson.National,
 		&createdPerson.CreatedAt,
 		&createdPerson.UpdatedAt,
 	)
@@ -109,7 +109,7 @@ func (r *Repository) GetByID(ctx context.Context, personId int) (*Person, error)
 		&person.Patronymic,
 		&person.Age,
 		&person.Gender,
-		&person.Nationalities,
+		&person.National,
 		&person.CreatedAt,
 		&person.UpdatedAt)
 	if err != nil {
@@ -140,7 +140,7 @@ func (r *Repository) GetALl(ctx context.Context) ([]*Person, error) {
 			&person.Patronymic,
 			&person.Age,
 			&person.Gender,
-			&person.Nationalities,
+			&person.National,
 			&person.CreatedAt,
 			&person.UpdatedAt,
 		)
@@ -155,7 +155,7 @@ func (r *Repository) GetALl(ctx context.Context) ([]*Person, error) {
 	return persons, nil
 }
 
-func (r *Repository) Update(ctx context.Context, person *Person) error {
+func (r *Repository) Update(ctx context.Context, person *Person) (*Person, error) {
 	updatedAt := pgtype.Timestamp{
 		Time:  time.Now(),
 		Valid: true,
@@ -193,18 +193,29 @@ func (r *Repository) Update(ctx context.Context, person *Person) error {
 		args["gender"] = person.Gender
 	}
 
-	if person.Nationalities != nil {
+	if person.National != nil {
 		query += ", national = @national"
-		args["national"] = person.Nationalities
+		args["national"] = person.National
 	}
 
-	query += " WHERE person_id = @person_id"
+	query += " WHERE person_id = @person_id RETURNING *"
 
-	_, err := r.storage.Pool.Exec(ctx, query, args)
+	var updatedPerson Person
+	err := r.storage.Pool.QueryRow(ctx, query, args).Scan(
+		&updatedPerson.ID,
+		&updatedPerson.Name,
+		&updatedPerson.Surname,
+		&updatedPerson.Patronymic,
+		&updatedPerson.Age,
+		&updatedPerson.Gender,
+		&updatedPerson.National,
+		&updatedPerson.CreatedAt,
+		&updatedPerson.UpdatedAt,
+	)
 	if err != nil {
 		r.log.Debug("Error updating person", slog.String("error", err.Error()))
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &updatedPerson, nil
 }
