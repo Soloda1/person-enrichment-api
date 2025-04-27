@@ -11,7 +11,7 @@ import (
 )
 
 type Request struct {
-	PersonId int `json:"personId" binding:"required"`
+	PersonId int `uri:"id" binding:"required"`
 }
 
 type Response struct {
@@ -28,14 +28,13 @@ func New(log *logger.Logger, service PersonDeleter) gin.HandlerFunc {
 		log.Info("DeletePerson called")
 
 		var req Request
-		err := c.ShouldBindJSON(&req)
-		if err != nil {
-			log.Debug("failed to bind request body", slog.String("error", err.Error()))
-			utils.SendError(c, http.StatusBadRequest, "invalid request body")
+		if err := c.ShouldBindUri(&req); err != nil {
+			log.Debug("personId is invalid", slog.String("error", err.Error()))
+			utils.SendError(c, http.StatusBadRequest, "invalid person id")
 			return
 		}
 
-		err = service.DeletePerson(c.Request.Context(), req.PersonId)
+		err := service.DeletePerson(c.Request.Context(), req.PersonId)
 		if err != nil {
 			log.Debug("failed to delete person", slog.String("error", err.Error()))
 			utils.SendError(c, http.StatusInternalServerError, err.Error())
