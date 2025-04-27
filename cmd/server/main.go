@@ -9,6 +9,9 @@ import (
 	"person-enrichment-api/config"
 	"person-enrichment-api/internal/api"
 	"person-enrichment-api/internal/migrator"
+	"person-enrichment-api/internal/repository"
+	personrepository "person-enrichment-api/internal/repository/person"
+	personservice "person-enrichment-api/internal/service/person"
 	"person-enrichment-api/internal/utils/logger"
 	"syscall"
 	"time"
@@ -25,18 +28,29 @@ func main() {
 	ctx := context.Background()
 	log := logger.New(cfg.Env)
 
-	// Запуск миграций
 	if err := migrator.Migrate(log, dsn, cfg.DATABASE.MigrationsPath); err != nil {
-		log.Error("Failed to run migrations", slog.String("error", err.Error()))
+		log.Debug("Failed to run migrations", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
-	server := api.NewAPIServer(cfg.HTTPServer.Address, log)
+	storage, err := repository.NewStorage(ctx, dsn)
+	if err != nil {
+		log.Debug("Failed to create storage", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
+	personRepo := personrepository.NewRepository(storage, log)
+	personService := personservice.NewService(personRepo, log)
+
+	server := api.NewAPIServer(
+		cfg.HTTPServer.Address,
+		log,
+		personService)
 
 	done := make(chan bool)
 	go func() {
 		if err := server.Run(ctx, cfg); err != nil {
-			log.Error("server error", slog.String("error", err.Error()))
+			log.Debug("server error", slog.String("error", err.Error()))
 		}
 		done <- true
 	}()
@@ -51,6 +65,7 @@ func main() {
 	if err := server.Shutdown(ctx); err != nil {
 		log.Error("server shutdown error", slog.String("error", err.Error()))
 	}
+	storage.Close()
 	<-done
 	log.Info("Server exiting")
 }

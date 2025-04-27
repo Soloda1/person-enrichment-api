@@ -10,7 +10,7 @@ import (
 
 func RequestLoggerMiddleware(log *logger.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Info("Logger Middleware enabled")
+		//log.Info("Logger Middleware enabled")
 
 		entry := log.With(
 			slog.String("method", c.Request.Method),
