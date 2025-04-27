@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"person-enrichment-api/config"
+	"person-enrichment-api/external/enrichment"
 	"person-enrichment-api/internal/api"
 	"person-enrichment-api/internal/migrator"
 	"person-enrichment-api/internal/repository"
@@ -39,8 +40,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	enrichmentService := enrichment.NewEnrichmentService()
+
 	personRepo := personrepository.NewRepository(storage, log)
-	personService := personservice.NewService(personRepo, log)
+	personService := personservice.NewService(personRepo, log, enrichmentService)
 
 	server := api.NewAPIServer(
 		cfg.HTTPServer.Address,

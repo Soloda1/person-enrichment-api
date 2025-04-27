@@ -2,6 +2,8 @@ package person
 
 import (
 	"context"
+	"log/slog"
+	"person-enrichment-api/external/enrichment"
 	"person-enrichment-api/internal/repository/person"
 	"person-enrichment-api/internal/utils/logger"
 )
@@ -15,18 +17,35 @@ type PersonService interface {
 }
 
 type Service struct {
-	repo person.PersonRepository
-	log  *logger.Logger
+	repo   person.PersonRepository
+	log    *logger.Logger
+	enrich enrichment.EnrichmentService
 }
 
-func NewService(repo person.PersonRepository, log *logger.Logger) *Service {
+type EnrichProvider interface {
+	Enrich(ctx context.Context, name string) (*enrichment.EnrichedPerson, error)
+}
+
+func NewService(repo person.PersonRepository, log *logger.Logger, enrichmentService EnrichProvider) *Service {
 	return &Service{
-		repo: repo,
-		log:  log,
+		repo:   repo,
+		log:    log,
+		enrich: enrichmentService,
 	}
 }
 
 func (s *Service) CreatePerson(ctx context.Context, person *person.Person) (*person.Person, error) {
+	s.log.Info("Enriching person")
+	enrichedPerson, err := s.enrich.Enrich(ctx, person.Name)
+	if err != nil {
+		s.log.Debug("Error enriching person", slog.String("error", err.Error()))
+		return nil, err
+	}
+
+	person.Age = enrichedPerson.Age
+	person.Gender = enrichedPerson.Gender
+	person.National = enrichedPerson.National
+
 	return s.repo.Create(ctx, person)
 }
 

@@ -43,31 +43,13 @@ func New(log *logger.Logger, service PersonUpdater) gin.HandlerFunc {
 		}
 
 		personModel := &person.Person{
-			ID: req.ID,
-		}
-
-		if req.Name != nil {
-			personModel.Name = *req.Name
-		}
-
-		if req.Surname != nil {
-			personModel.Surname = *req.Surname
-		}
-
-		if req.Patronymic != nil {
-			personModel.Patronymic = req.Patronymic
-		}
-
-		if req.Age != nil {
-			personModel.Age = *req.Age
-		}
-
-		if req.Gender != nil {
-			personModel.Gender = *req.Gender
-		}
-
-		if req.National != nil {
-			personModel.National = *req.National
+			ID:         req.ID,
+			Name:       *req.Name,
+			Surname:    *req.Surname,
+			Patronymic: req.Patronymic,
+			Age:        *req.Age,
+			Gender:     *req.Gender,
+			National:   *req.National,
 		}
 
 		updatedPerson, err := service.UpdatePerson(c.Request.Context(), personModel)
