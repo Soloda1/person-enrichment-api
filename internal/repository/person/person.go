@@ -3,6 +3,7 @@ package person
 import (
 	"context"
 	"log/slog"
+	"person-enrichment-api/internal/models"
 	"person-enrichment-api/internal/repository"
 	"person-enrichment-api/internal/utils/logger"
 	"time"
@@ -11,23 +12,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type Person struct {
-	ID         int              `json:"id,omitempty"`
-	Name       string           `json:"name,omitempty"`
-	Surname    string           `json:"surname,omitempty"`
-	Patronymic *string          `json:"patronymic,omitempty"`
-	Age        int              `json:"age,omitempty"`
-	Gender     string           `json:"gender,omitempty"`
-	National   []string         `json:"national,omitempty"`
-	CreatedAt  pgtype.Timestamp `json:"created_at"`
-	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
-}
-
 type PersonRepository interface {
-	Create(ctx context.Context, person *Person) (*Person, error)
-	GetByID(ctx context.Context, personId int) (*Person, error)
-	GetALl(ctx context.Context, limit int, offset int) ([]*Person, error)
-	Update(ctx context.Context, person *Person) (*Person, error)
+	Create(ctx context.Context, person *models.Person) (*models.Person, error)
+	GetByID(ctx context.Context, personId int) (*models.Person, error)
+	GetALl(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error)
+	Update(ctx context.Context, person *models.Person) (*models.Person, error)
 	Delete(ctx context.Context, personId int) error
 }
 
@@ -40,7 +29,7 @@ func NewRepository(storage *repository.Storage, log *logger.Logger) *Repository 
 	return &Repository{storage, log}
 }
 
-func (r *Repository) Create(ctx context.Context, person *Person) (*Person, error) {
+func (r *Repository) Create(ctx context.Context, person *models.Person) (*models.Person, error) {
 	createdAt := pgtype.Timestamp{
 		Time:  time.Now(),
 		Valid: true,
@@ -60,7 +49,7 @@ func (r *Repository) Create(ctx context.Context, person *Person) (*Person, error
 	VALUES (@name, @surname, @patronymic, @age, @gender, @national, @created_at, @updated_at)
 	RETURNING *`
 
-	var createdPerson Person
+	var createdPerson models.Person
 	err := r.storage.Pool.QueryRow(ctx, query, args).Scan(
 		&createdPerson.ID,
 		&createdPerson.Name,
@@ -98,10 +87,10 @@ func (r *Repository) Delete(ctx context.Context, personId int) error {
 	return nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, personId int) (*Person, error) {
+func (r *Repository) GetByID(ctx context.Context, personId int) (*models.Person, error) {
 	args := pgx.NamedArgs{"person_id": personId}
 	query := `SELECT * FROM Person WHERE person_id = @person_id`
-	var person Person
+	var person models.Person
 	err := r.storage.Pool.QueryRow(ctx, query, args).Scan(
 		&person.ID,
 		&person.Name,
@@ -120,21 +109,21 @@ func (r *Repository) GetByID(ctx context.Context, personId int) (*Person, error)
 	return &person, nil
 }
 
-func (r *Repository) GetALl(ctx context.Context, limit int, offset int) ([]*Person, error) {
+func (r *Repository) GetALl(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error) {
 	query := `SELECT * FROM Person
 				ORDER BY person_id
 				LIMIT $1 OFFSET $2`
 
-	rows, err := r.storage.Pool.Query(ctx, query, limit, offset)
+	rows, err := r.storage.Pool.Query(ctx, query, filter.Limit, filter.Offset)
 	if err != nil {
 		r.log.Debug("Error getting persons", slog.String("error", err.Error()))
 		return nil, err
 	}
 	defer rows.Close()
 
-	var persons []*Person
+	var persons []*models.Person
 	for rows.Next() {
-		var person Person
+		var person models.Person
 		err := rows.Scan(
 			&person.ID,
 			&person.Name,
@@ -157,7 +146,7 @@ func (r *Repository) GetALl(ctx context.Context, limit int, offset int) ([]*Pers
 	return persons, nil
 }
 
-func (r *Repository) Update(ctx context.Context, person *Person) (*Person, error) {
+func (r *Repository) Update(ctx context.Context, person *models.Person) (*models.Person, error) {
 	updatedAt := pgtype.Timestamp{
 		Time:  time.Now(),
 		Valid: true,
@@ -202,7 +191,7 @@ func (r *Repository) Update(ctx context.Context, person *Person) (*Person, error
 
 	query += " WHERE person_id = @person_id RETURNING *"
 
-	var updatedPerson Person
+	var updatedPerson models.Person
 	err := r.storage.Pool.QueryRow(ctx, query, args).Scan(
 		&updatedPerson.ID,
 		&updatedPerson.Name,

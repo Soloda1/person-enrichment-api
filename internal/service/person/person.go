@@ -4,15 +4,16 @@ import (
 	"context"
 	"log/slog"
 	"person-enrichment-api/external/enrichment"
+	"person-enrichment-api/internal/models"
 	"person-enrichment-api/internal/repository/person"
 	"person-enrichment-api/internal/utils/logger"
 )
 
 type PersonService interface {
-	CreatePerson(ctx context.Context, person *person.Person) (*person.Person, error)
-	GetPersonByID(ctx context.Context, personId int) (*person.Person, error)
-	GetAllPersons(ctx context.Context, limit int, offset int) ([]*person.Person, error)
-	UpdatePerson(ctx context.Context, person *person.Person) (*person.Person, error)
+	CreatePerson(ctx context.Context, person *models.Person) (*models.Person, error)
+	GetPersonByID(ctx context.Context, personId int) (*models.Person, error)
+	GetAllPersons(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error)
+	UpdatePerson(ctx context.Context, person *models.Person) (*models.Person, error)
 	DeletePerson(ctx context.Context, personId int) error
 }
 
@@ -34,7 +35,7 @@ func NewService(repo person.PersonRepository, log *logger.Logger, enrichmentServ
 	}
 }
 
-func (s *Service) CreatePerson(ctx context.Context, person *person.Person) (*person.Person, error) {
+func (s *Service) CreatePerson(ctx context.Context, person *models.Person) (*models.Person, error) {
 	s.log.Info("Enriching person")
 	enrichedPerson, err := s.enrich.Enrich(ctx, person.Name)
 	if err != nil {
@@ -49,15 +50,15 @@ func (s *Service) CreatePerson(ctx context.Context, person *person.Person) (*per
 	return s.repo.Create(ctx, person)
 }
 
-func (s *Service) GetPersonByID(ctx context.Context, personId int) (*person.Person, error) {
+func (s *Service) GetPersonByID(ctx context.Context, personId int) (*models.Person, error) {
 	return s.repo.GetByID(ctx, personId)
 }
 
-func (s *Service) GetAllPersons(ctx context.Context, limit int, offset int) ([]*person.Person, error) {
-	return s.repo.GetALl(ctx, limit, offset)
+func (s *Service) GetAllPersons(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error) {
+	return s.repo.GetALl(ctx, filter)
 }
 
-func (s *Service) UpdatePerson(ctx context.Context, person *person.Person) (*person.Person, error) {
+func (s *Service) UpdatePerson(ctx context.Context, person *models.Person) (*models.Person, error) {
 	return s.repo.Update(ctx, person)
 }
 

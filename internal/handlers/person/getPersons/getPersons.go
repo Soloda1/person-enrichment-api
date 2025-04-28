@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"person-enrichment-api/config"
-	"person-enrichment-api/internal/repository/person"
+	"person-enrichment-api/internal/models"
 	utils "person-enrichment-api/internal/utils/error"
 	"person-enrichment-api/internal/utils/logger"
 	"strconv"
@@ -16,16 +16,18 @@ import (
 type Response struct {
 	Status  string           `json:"status"`
 	Error   string           `json:"error,omitempty"`
-	Persons []*person.Person `json:"person,omitempty"`
+	Persons []*models.Person `json:"person,omitempty"`
 }
 
 type PersonsProvider interface {
-	GetAllPersons(ctx context.Context, limit int, offset int) ([]*person.Person, error)
+	GetAllPersons(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error)
 }
 
 func New(log *logger.Logger, service PersonsProvider, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("GetAllPersons called")
+
+		filter := models.PersonFilter{}
 
 		limitStr := c.DefaultQuery("limit", strconv.Itoa(cfg.HTTPServer.Pagination.DefaultLimit))
 		pageStr := c.DefaultQuery("page", strconv.Itoa(cfg.HTTPServer.Pagination.DefaultPage))
@@ -43,9 +45,10 @@ func New(log *logger.Logger, service PersonsProvider, cfg *config.Config) gin.Ha
 			return
 		}
 
-		offset := (page - 1) * limit
+		filter.Offset = (page - 1) * limit
+		filter.Limit = limit
 
-		personModel, err := service.GetAllPersons(c.Request.Context(), limit, offset)
+		personModel, err := service.GetAllPersons(c.Request.Context(), filter)
 		if err != nil {
 			log.Debug("failed to get person by id", slog.String("error", err.Error()))
 			utils.SendError(c, http.StatusInternalServerError, err.Error())

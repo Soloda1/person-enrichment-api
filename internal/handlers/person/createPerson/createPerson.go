@@ -2,12 +2,13 @@ package createPerson
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
-	"person-enrichment-api/internal/repository/person"
+	"person-enrichment-api/internal/models"
 	utils "person-enrichment-api/internal/utils/error"
 	"person-enrichment-api/internal/utils/logger"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Request struct {
@@ -19,11 +20,11 @@ type Request struct {
 type Response struct {
 	Status string         `json:"status"`
 	Error  string         `json:"error,omitempty"`
-	Person *person.Person `json:"person,omitempty"`
+	Person *models.Person `json:"person,omitempty"`
 }
 
 type PersonCreator interface {
-	CreatePerson(ctx context.Context, person *person.Person) (*person.Person, error)
+	CreatePerson(ctx context.Context, person *models.Person) (*models.Person, error)
 }
 
 func New(log *logger.Logger, service PersonCreator) gin.HandlerFunc {
@@ -37,7 +38,7 @@ func New(log *logger.Logger, service PersonCreator) gin.HandlerFunc {
 			return
 		}
 
-		personModel := &person.Person{
+		personModel := &models.Person{
 			Name:       req.Name,
 			Surname:    req.Surname,
 			Patronymic: req.Patronymic,

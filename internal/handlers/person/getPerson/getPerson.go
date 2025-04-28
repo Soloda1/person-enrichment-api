@@ -2,12 +2,13 @@ package getPerson
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
-	"person-enrichment-api/internal/repository/person"
+	"person-enrichment-api/internal/models"
 	utils "person-enrichment-api/internal/utils/error"
 	"person-enrichment-api/internal/utils/logger"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Request struct {
@@ -17,11 +18,11 @@ type Request struct {
 type Response struct {
 	Status string         `json:"status"`
 	Error  string         `json:"error,omitempty"`
-	Person *person.Person `json:"person,omitempty"`
+	Person *models.Person `json:"person,omitempty"`
 }
 
 type PersonByIdProvider interface {
-	GetPersonByID(ctx context.Context, personId int) (*person.Person, error)
+	GetPersonByID(ctx context.Context, personId int) (*models.Person, error)
 }
 
 func New(log *logger.Logger, service PersonByIdProvider) gin.HandlerFunc {
