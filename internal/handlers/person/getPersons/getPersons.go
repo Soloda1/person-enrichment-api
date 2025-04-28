@@ -29,6 +29,32 @@ func New(log *logger.Logger, service PersonsProvider, cfg *config.Config) gin.Ha
 
 		filter := models.PersonFilter{}
 
+		if name := c.Query("name"); name != "" {
+			filter.Name = &name
+		}
+		if surname := c.Query("surname"); surname != "" {
+			filter.Surname = &surname
+		}
+		if patronymic := c.Query("patronymic"); patronymic != "" {
+			filter.Patronymic = &patronymic
+		}
+		if gender := c.Query("gender"); gender != "" {
+			filter.Gender = &gender
+		}
+		if national := c.Query("national"); national != "" {
+			filter.National = &national
+		}
+		if minAgeStr := c.Query("min_age"); minAgeStr != "" {
+			if minAge, err := strconv.Atoi(minAgeStr); err == nil {
+				filter.MinAge = &minAge
+			}
+		}
+		if maxAgeStr := c.Query("max_age"); maxAgeStr != "" {
+			if maxAge, err := strconv.Atoi(maxAgeStr); err == nil {
+				filter.MaxAge = &maxAge
+			}
+		}
+
 		limitStr := c.DefaultQuery("limit", strconv.Itoa(cfg.HTTPServer.Pagination.DefaultLimit))
 		pageStr := c.DefaultQuery("page", strconv.Itoa(cfg.HTTPServer.Pagination.DefaultPage))
 

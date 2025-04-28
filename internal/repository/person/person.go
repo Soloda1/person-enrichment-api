@@ -110,11 +110,51 @@ func (r *Repository) GetByID(ctx context.Context, personId int) (*models.Person,
 }
 
 func (r *Repository) GetALl(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error) {
-	query := `SELECT * FROM Person
-				ORDER BY person_id
-				LIMIT $1 OFFSET $2`
+	args := pgx.NamedArgs{
+		"limit":  filter.Limit,
+		"offset": filter.Offset,
+	}
 
-	rows, err := r.storage.Pool.Query(ctx, query, filter.Limit, filter.Offset)
+	query := `SELECT * FROM Person WHERE true`
+
+	if filter.Name != nil {
+		query += " AND name ILIKE @name"
+		args["name"] = "%" + *filter.Name + "%"
+	}
+
+	if filter.Surname != nil {
+		query += " AND surname ILIKE @surname"
+		args["surname"] = "%" + *filter.Surname + "%"
+	}
+
+	if filter.Patronymic != nil {
+		query += " AND patronymic ILIKE @patronymic"
+		args["patronymic"] = "%" + *filter.Patronymic + "%"
+	}
+
+	if filter.Gender != nil {
+		query += " AND gender ILIKE @gender"
+		args["gender"] = "%" + *filter.Gender + "%"
+	}
+
+	if filter.National != nil {
+		query += " AND EXISTS (SELECT * FROM unnest(national) AS nat WHERE LOWER(nat) = @national) "
+		args["national"] = *filter.National
+	}
+
+	if filter.MinAge != nil {
+		query += " AND age >= @min_age"
+		args["min_age"] = *filter.MinAge
+	}
+
+	if filter.MaxAge != nil {
+		query += " AND age <= @max_age"
+		args["max_age"] = *filter.MaxAge
+	}
+
+	query += " ORDER BY person_id LIMIT @limit OFFSET @offset"
+
+	rows, err := r.storage.Pool.Query(ctx, query, args)
 	if err != nil {
 		r.log.Debug("Error getting persons", slog.String("error", err.Error()))
 		return nil, err
