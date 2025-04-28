@@ -11,7 +11,7 @@ import (
 type PersonService interface {
 	CreatePerson(ctx context.Context, person *person.Person) (*person.Person, error)
 	GetPersonByID(ctx context.Context, personId int) (*person.Person, error)
-	GetAllPersons(ctx context.Context) ([]*person.Person, error)
+	GetAllPersons(ctx context.Context, limit int, offset int) ([]*person.Person, error)
 	UpdatePerson(ctx context.Context, person *person.Person) (*person.Person, error)
 	DeletePerson(ctx context.Context, personId int) error
 }
@@ -53,8 +53,8 @@ func (s *Service) GetPersonByID(ctx context.Context, personId int) (*person.Pers
 	return s.repo.GetByID(ctx, personId)
 }
 
-func (s *Service) GetAllPersons(ctx context.Context) ([]*person.Person, error) {
-	return s.repo.GetALl(ctx)
+func (s *Service) GetAllPersons(ctx context.Context, limit int, offset int) ([]*person.Person, error) {
+	return s.repo.GetALl(ctx, limit, offset)
 }
 
 func (s *Service) UpdatePerson(ctx context.Context, person *person.Person) (*person.Person, error) {

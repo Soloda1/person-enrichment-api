@@ -26,7 +26,7 @@ type Person struct {
 type PersonRepository interface {
 	Create(ctx context.Context, person *Person) (*Person, error)
 	GetByID(ctx context.Context, personId int) (*Person, error)
-	GetALl(ctx context.Context) ([]*Person, error)
+	GetALl(ctx context.Context, limit int, offset int) ([]*Person, error)
 	Update(ctx context.Context, person *Person) (*Person, error)
 	Delete(ctx context.Context, personId int) error
 }
@@ -120,10 +120,12 @@ func (r *Repository) GetByID(ctx context.Context, personId int) (*Person, error)
 	return &person, nil
 }
 
-func (r *Repository) GetALl(ctx context.Context) ([]*Person, error) {
-	query := `SELECT * FROM Person`
+func (r *Repository) GetALl(ctx context.Context, limit int, offset int) ([]*Person, error) {
+	query := `SELECT * FROM Person
+				ORDER BY person_id
+				LIMIT $1 OFFSET $2`
 
-	rows, err := r.storage.Pool.Query(ctx, query)
+	rows, err := r.storage.Pool.Query(ctx, query, limit, offset)
 	if err != nil {
 		r.log.Debug("Error getting persons", slog.String("error", err.Error()))
 		return nil, err

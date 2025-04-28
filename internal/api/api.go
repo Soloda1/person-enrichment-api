@@ -43,7 +43,7 @@ func (s *APIServer) Run(ctx context.Context, cfg *config.Config) error {
 	router.POST("/create", createPerson.New(s.log, s.personService))
 	router.DELETE("/delete/:id", deletePerson.New(s.log, s.personService))
 	router.GET("/person/:id", getPerson.New(s.log, s.personService))
-	router.GET("/persons", getPersons.New(s.log, s.personService))
+	router.GET("/persons", getPersons.New(s.log, s.personService, cfg))
 	router.PUT("/update", updatePerson.New(s.log, s.personService))
 
 	s.server = &http.Server{

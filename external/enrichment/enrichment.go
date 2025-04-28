@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"person-enrichment-api/config"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -22,11 +23,13 @@ type EnrichmentService interface {
 
 type Service struct {
 	httpClient *http.Client
+	cfg        *config.Config
 }
 
-func NewEnrichmentService() *Service {
+func NewEnrichmentService(cfg *config.Config) *Service {
 	return &Service{
 		httpClient: &http.Client{},
+		cfg:        cfg,
 	}
 }
 
@@ -79,7 +82,7 @@ func (e *Service) Enrich(ctx context.Context, name string) (*EnrichedPerson, err
 }
 
 func (e *Service) getAge(ctx context.Context, name string) (int, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.agify.io/?name=%s", name), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/?name=%s", e.cfg.ExternalApi.AgifyURL, name), nil)
 	if err != nil {
 		return 0, err
 	}
@@ -100,7 +103,7 @@ func (e *Service) getAge(ctx context.Context, name string) (int, error) {
 }
 
 func (e *Service) getGender(ctx context.Context, name string) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.genderize.io/?name=%s", name), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/?name=%s", e.cfg.ExternalApi.GenderizeURL, name), nil)
 	if err != nil {
 		return "", err
 	}
@@ -121,7 +124,7 @@ func (e *Service) getGender(ctx context.Context, name string) (string, error) {
 }
 
 func (e *Service) getNationalities(ctx context.Context, name string) ([]string, error) {
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("https://api.nationalize.io/?name=%s", name), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s/?name=%s", e.cfg.ExternalApi.NationalizeURL, name), nil)
 	if err != nil {
 		return nil, err
 	}

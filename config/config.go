@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -34,6 +35,12 @@ type HTTPServer struct {
 	Address     string        `env:"HTTP_SERVER_ADDRESS" env-default:"localhost:8080"`
 	Timeout     time.Duration `env:"HTTP_SERVER_TIMEOUT" env-default:"5s"`
 	IdleTimeout time.Duration `env:"HTTP_SERVER_IDLE_TIMEOUT" env-default:"60s"`
+	Pagination  Pagination    `env-required:"true"`
+}
+
+type Pagination struct {
+	DefaultLimit int `env:"PAGINATION_DEFAULT_LIMIT" env-default:"10"`
+	DefaultPage  int `env:"PAGINATION_DEFAULT_PAGE" env-default:"1"`
 }
 
 func MustLoad() *Config {
@@ -47,6 +54,10 @@ func MustLoad() *Config {
 			Address:     os.Getenv("HTTP_SERVER_ADDRESS"),
 			Timeout:     parseDuration(os.Getenv("HTTP_SERVER_TIMEOUT"), "5s"),
 			IdleTimeout: parseDuration(os.Getenv("HTTP_SERVER_IDLE_TIMEOUT"), "60s"),
+			Pagination: Pagination{
+				DefaultLimit: parseInt(os.Getenv("PAGINATION_DEFAULT_LIMIT"), 10),
+				DefaultPage:  parseInt(os.Getenv("PAGINATION_DEFAULT_PAGE"), 1),
+			},
 		},
 		DATABASE: DATABASE{
 			Username:       os.Getenv("DATABASE_USERNAME"),
@@ -75,4 +86,16 @@ func parseDuration(value, defaultValue string) time.Duration {
 		log.Fatalf("Error parsing duration: %s", err)
 	}
 	return duration
+}
+
+func parseInt(value string, defaultValue int) int {
+	if value == "" {
+		return defaultValue
+	}
+	result, err := strconv.Atoi(value)
+	if err != nil {
+		log.Printf("Error parsing integer: %s, using default value: %d", err, defaultValue)
+		return defaultValue
+	}
+	return result
 }

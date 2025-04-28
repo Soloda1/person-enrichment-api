@@ -40,7 +40,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	enrichmentService := enrichment.NewEnrichmentService()
+	enrichmentService := enrichment.NewEnrichmentService(cfg)
 
 	personRepo := personrepository.NewRepository(storage, log)
 	personService := personservice.NewService(personRepo, log, enrichmentService)
