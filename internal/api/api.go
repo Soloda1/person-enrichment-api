@@ -15,7 +15,11 @@ import (
 	"person-enrichment-api/internal/service/person"
 	"person-enrichment-api/internal/utils/logger"
 
+	_ "person-enrichment-api/docs"
+
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type APIServer struct {
@@ -37,6 +41,9 @@ func (s *APIServer) Run(ctx context.Context, cfg *config.Config) error {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(requestLogger.RequestLoggerMiddleware(s.log))
+
+	// Swagger UI
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/ping", ping.Ping)
 

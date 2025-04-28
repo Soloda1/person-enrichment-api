@@ -1,0 +1,434 @@
+basePath: /
+definitions:
+  createPerson.Request:
+    description: Структура запроса для создания нового человека
+    properties:
+      name:
+        description: |-
+          Name имя человека
+          @Description Имя человека
+          @Required
+        type: string
+      patronymic:
+        description: |-
+          Patronymic отчество человека
+          @Description Отчество человека (опционально)
+        type: string
+      surname:
+        description: |-
+          Surname фамилия человека
+          @Description Фамилия человека
+          @Required
+        type: string
+    required:
+    - name
+    - surname
+    type: object
+  createPerson.Response:
+    description: Структура ответа при создании нового человека
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Сообщение об ошибке (если есть)
+        type: string
+      person:
+        allOf:
+        - $ref: '#/definitions/models.Person'
+        description: |-
+          Person данные созданного человека
+          @Description Данные созданного человека
+      status:
+        description: |-
+          Status статус операции
+          @Description HTTP статус операции
+        type: string
+    type: object
+  deletePerson.Response:
+    description: Структура ответа при удалении человека
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Сообщение об ошибке (если есть)
+        type: string
+      status:
+        description: |-
+          Status статус операции
+          @Description HTTP статус операции
+        type: string
+    type: object
+  getPerson.Response:
+    description: Структура ответа с информацией о человеке
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Сообщение об ошибке (если есть)
+        type: string
+      person:
+        allOf:
+        - $ref: '#/definitions/models.Person'
+        description: |-
+          Person данные человека
+          @Description Данные найденного человека
+      status:
+        description: |-
+          Status статус операции
+          @Description HTTP статус операции
+        type: string
+    type: object
+  getPersons.Response:
+    description: Структура ответа со списком людей и дополнительной информацией
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Сообщение об ошибке (если есть)
+        type: string
+      person:
+        description: |-
+          Persons список людей
+          @Description Список найденных людей
+        items:
+          $ref: '#/definitions/models.Person'
+        type: array
+      status:
+        description: |-
+          Status статус операции
+          @Description HTTP статус операции
+        type: string
+    type: object
+  models.Person:
+    description: Модель данных человека с обогащенной информацией
+    properties:
+      age:
+        description: |-
+          Age возраст человека
+          @Description Возраст человека (определяется автоматически)
+        type: integer
+      created_at:
+        description: |-
+          CreatedAt время создания записи
+          @Description Время создания записи
+        type: string
+      gender:
+        description: |-
+          Gender пол человека
+          @Description Пол человека (определяется автоматически)
+        type: string
+      id:
+        description: |-
+          ID уникальный идентификатор
+          @Description Уникальный идентификатор человека
+        type: integer
+      name:
+        description: |-
+          Name имя человека
+          @Description Имя человека
+          @Required
+        type: string
+      national:
+        description: |-
+          National национальности
+          @Description Список вероятных национальностей (определяется автоматически)
+        items:
+          type: string
+        type: array
+      patronymic:
+        description: |-
+          Patronymic отчество человека
+          @Description Отчество человека (опционально)
+        type: string
+      surname:
+        description: |-
+          Surname фамилия человека
+          @Description Фамилия человека
+          @Required
+        type: string
+      updated_at:
+        description: |-
+          UpdatedAt время последнего обновления
+          @Description Время последнего обновления записи
+        type: string
+    required:
+    - name
+    - surname
+    type: object
+  updatePerson.Request:
+    description: Структура запроса для обновления информации о человеке
+    properties:
+      age:
+        description: |-
+          Age новый возраст человека
+          @Description Новый возраст человека (опционально)
+        type: integer
+      gender:
+        description: |-
+          Gender новый пол человека
+          @Description Новый пол человека (опционально)
+        type: string
+      id:
+        description: |-
+          ID идентификатор человека
+          @Description ID человека для обновления
+          @Required
+        type: integer
+      name:
+        description: |-
+          Name новое имя человека
+          @Description Новое имя человека (опционально)
+        type: string
+      national:
+        description: |-
+          National новые национальности
+          @Description Новый список национальностей (опционально)
+        items:
+          type: string
+        type: array
+      patronymic:
+        description: |-
+          Patronymic новое отчество человека
+          @Description Новое отчество человека (опционально)
+        type: string
+      surname:
+        description: |-
+          Surname новая фамилия человека
+          @Description Новая фамилия человека (опционально)
+        type: string
+    required:
+    - id
+    type: object
+  updatePerson.Response:
+    description: Структура ответа при обновлении информации о человеке
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Сообщение об ошибке (если есть)
+        type: string
+      person:
+        allOf:
+        - $ref: '#/definitions/models.Person'
+        description: |-
+          Person обновленные данные человека
+          @Description Обновленные данные человека
+      status:
+        description: |-
+          Status статус операции
+          @Description HTTP статус операции
+        type: string
+    type: object
+  utils.ErrorResponse:
+    description: Стандартная структура ответа при возникновении ошибки
+    properties:
+      error:
+        description: |-
+          Error сообщение об ошибке
+          @Description Описание ошибки
+        type: string
+      status:
+        description: |-
+          Status HTTP статус
+          @Description HTTP статус ошибки
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API сервис для обогащения данных о людях дополнительной информацией
+  title: Person Enrichment API
+  version: "1.0"
+paths:
+  /create:
+    post:
+      consumes:
+      - application/json
+      description: Создает нового человека с указанными данными и обогащает их дополнительной
+        информацией
+      parameters:
+      - description: Данные для создания человека
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/createPerson.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/createPerson.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Создать нового человека
+      tags:
+      - person
+  /delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет человека по его ID
+      parameters:
+      - description: ID человека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/deletePerson.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Удалить человека
+      tags:
+      - person
+  /person/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Получает информацию о человеке по его идентификатору
+      parameters:
+      - description: ID человека
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/getPerson.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Получить человека по ID
+      tags:
+      - person
+  /persons:
+    get:
+      consumes:
+      - application/json
+      description: Получает список людей с возможностью фильтрации и пагинации
+      parameters:
+      - description: Фильтр по имени
+        in: query
+        name: name
+        type: string
+      - description: Фильтр по фамилии
+        in: query
+        name: surname
+        type: string
+      - description: Фильтр по отчеству
+        in: query
+        name: patronymic
+        type: string
+      - description: Фильтр по полу
+        in: query
+        name: gender
+        type: string
+      - description: Фильтр по национальности
+        in: query
+        name: national
+        type: string
+      - description: Минимальный возраст
+        in: query
+        name: min_age
+        type: integer
+      - description: Максимальный возраст
+        in: query
+        name: max_age
+        type: integer
+      - description: Количество записей на странице
+        in: query
+        name: limit
+        type: integer
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/getPersons.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Получить список людей
+      tags:
+      - person
+  /ping:
+    get:
+      description: Возвращает статус работоспособности API и текущее время
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ с сообщением pong и временем
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Проверка работоспособности API
+      tags:
+      - health
+  /update:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о человеке по его ID
+      parameters:
+      - description: Данные для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/updatePerson.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/updatePerson.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Обновить информацию о человеке
+      tags:
+      - person
+schemes:
+- http
+swagger: "2.0"

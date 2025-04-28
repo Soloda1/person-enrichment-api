@@ -13,16 +13,44 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Response структура ответа со списком людей
+// @Description Структура ответа со списком людей и дополнительной информацией
 type Response struct {
-	Status  string           `json:"status"`
-	Error   string           `json:"error,omitempty"`
+	// Status статус операции
+	// @Description HTTP статус операции
+	Status string `json:"status"`
+
+	// Error сообщение об ошибке
+	// @Description Сообщение об ошибке (если есть)
+	Error string `json:"error,omitempty"`
+
+	// Persons список людей
+	// @Description Список найденных людей
 	Persons []*models.Person `json:"person,omitempty"`
 }
 
+// PersonsProvider интерфейс для получения списка людей
 type PersonsProvider interface {
 	GetAllPersons(ctx context.Context, filter models.PersonFilter) ([]*models.Person, error)
 }
 
+// @Summary Получить список людей
+// @Description Получает список людей с возможностью фильтрации и пагинации
+// @Tags person
+// @Accept json
+// @Produce json
+// @Param name query string false "Фильтр по имени"
+// @Param surname query string false "Фильтр по фамилии"
+// @Param patronymic query string false "Фильтр по отчеству"
+// @Param gender query string false "Фильтр по полу"
+// @Param national query string false "Фильтр по национальности"
+// @Param min_age query int false "Минимальный возраст"
+// @Param max_age query int false "Максимальный возраст"
+// @Param limit query int false "Количество записей на странице"
+// @Param page query int false "Номер страницы"
+// @Success 200 {object} Response
+// @Failure 500 {object} utils.ErrorResponse
+// @Router /persons [get]
 func New(log *logger.Logger, service PersonsProvider, cfg *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("GetAllPersons called")

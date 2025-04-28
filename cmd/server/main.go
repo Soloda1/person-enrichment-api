@@ -1,3 +1,10 @@
+// @title Person Enrichment API
+// @version 1.0
+// @description API сервис для обогащения данных о людях дополнительной информацией
+// @host localhost:8080
+// @BasePath /
+// @schemes http
+
 package main
 
 import (

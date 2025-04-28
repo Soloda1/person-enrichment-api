@@ -11,20 +11,45 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Request структура запроса на получение человека
+// @Description Структура запроса для получения информации о человеке по ID
 type Request struct {
+	// PersonID идентификатор человека
+	// @Description ID человека для поиска
 	PersonID int `uri:"id" binding:"required"`
 }
 
+// Response структура ответа с данными человека
+// @Description Структура ответа с информацией о человеке
 type Response struct {
-	Status string         `json:"status"`
-	Error  string         `json:"error,omitempty"`
+	// Status статус операции
+	// @Description HTTP статус операции
+	Status string `json:"status"`
+
+	// Error сообщение об ошибке
+	// @Description Сообщение об ошибке (если есть)
+	Error string `json:"error,omitempty"`
+
+	// Person данные человека
+	// @Description Данные найденного человека
 	Person *models.Person `json:"person,omitempty"`
 }
 
+// PersonByIdProvider интерфейс для получения человека по ID
 type PersonByIdProvider interface {
 	GetPersonByID(ctx context.Context, personId int) (*models.Person, error)
 }
 
+// @Summary Получить человека по ID
+// @Description Получает информацию о человеке по его идентификатору
+// @Tags person
+// @Accept json
+// @Produce json
+// @Param id path int true "ID человека"
+// @Success 200 {object} Response
+// @Failure 400 {object} utils.ErrorResponse
+// @Failure 500 {object} utils.ErrorResponse
+// @Router /person/{id} [get]
 func New(log *logger.Logger, service PersonByIdProvider) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Info("GetPersonByID called")
