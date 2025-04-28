@@ -72,18 +72,6 @@ http://localhost:8080/swagger/index.html
 └── go.sum             # Dependency checksums
 ```
 
-## Utilities
-
-1. **Run migrations**:
-    ```sh
-    go run cmd/migrator/main.go
-    ```
-
-2. **Run server**:
-    ```sh
-    go run cmd/server/main.go
-    ```
-
 ## Open Source
 This project is open source. You are free to use, study, and contribute to its development.
 
