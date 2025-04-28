@@ -17,7 +17,7 @@
 
 1. **Clone the repository**:
     ```sh
-    git clone https://github.com/your-username/person-enrichment-api.git
+    git clone https://github.com/soloda1/person-enrichment-api.git
     cd person-enrichment-api
     ```
 
