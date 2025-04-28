@@ -10,8 +10,7 @@
 - **Slog**: Structured logging
 - **Docker**: Application containerization
 - **Godotenv**: Environment variables reading and processing
-- **Validator**: Input data validation
-- **Migrate**: Database migrations management
+- **Golang-migrate**: Database migrations management
 
 ## Installation
 
