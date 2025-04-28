@@ -9,7 +9,7 @@
 - **Swagger**: API documentation generation and display
 - **Slog**: Structured logging
 - **Docker**: Application containerization
-- **Cleanenv**: Environment variables reading and processing
+- **Godotenv**: Environment variables reading and processing
 - **Validator**: Input data validation
 - **Migrate**: Database migrations management
 
