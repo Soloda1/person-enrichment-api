@@ -9,6 +9,7 @@ import (
 	utils "person-enrichment-api/internal/utils/error"
 	"person-enrichment-api/internal/utils/logger"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -70,6 +71,7 @@ func New(log *logger.Logger, service PersonsProvider, cfg *config.Config) gin.Ha
 			filter.Gender = &gender
 		}
 		if national := c.Query("national"); national != "" {
+			national = strings.ToLower(national)
 			filter.National = &national
 		}
 		if minAgeStr := c.Query("min_age"); minAgeStr != "" {
