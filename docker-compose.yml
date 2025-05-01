@@ -14,8 +14,10 @@ services:
     image: postgres:15-alpine
     ports:
       - "5432:5432"
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -38,4 +40,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data: 
+  postgres_data:
